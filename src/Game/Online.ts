@@ -17,12 +17,11 @@ export default class Online {
     return this.players
       .slice(0, count)
       .map(
-        (player) =>
-          ({
-            username: player.username,
-            uuid: player.uuid,
-            id: player.id,
-          } as Player)
+        (player) => ({
+          username: player.username,
+          uuid: player.uuid,
+          id: player.id,
+        } as Player),
       );
   }
 

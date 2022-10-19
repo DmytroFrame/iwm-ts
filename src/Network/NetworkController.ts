@@ -38,10 +38,10 @@ export default class NetworkController {
   }
 
   private async routeHandshaking() {
-    Online.addPlayer(new Player("usesrs"))
+    Online.addPlayer(new Player("usesrs"));
     console.log("This from Minecraft Client");
-    const handshaking = await Handshaking(this.stream)
-    console.log(handshaking)
+    const handshaking = await Handshaking(this.stream);
+    console.log(handshaking);
 
     this.closeClient();
   }
@@ -49,8 +49,12 @@ export default class NetworkController {
   private async routeWebPing() {
     console.log("This ping from Web Browser");
     await this.stream.read(new Uint8Array(1000));
-    const content = JSON.stringify({ online: Online.getOnline(), players: Online.getPlayersList(30) });
-    const response = `HTTP/1.1 200 OK\r\nContent-Length: ${content.length}\r\nContent-Type: application/json; charset=utf-8\r\nAccess-Control-Allow-Origin: *\r\nX-Powered-By: iWM Server\r\n\r\n${content}`;
+    const content = JSON.stringify({
+      online: Online.getOnline(),
+      players: Online.getPlayersList(30),
+    });
+    const response =
+      `HTTP/1.1 200 OK\r\nContent-Length: ${content.length}\r\nContent-Type: application/json; charset=utf-8\r\nAccess-Control-Allow-Origin: *\r\nX-Powered-By: iWM Server\r\n\r\n${content}`;
     await this.stream.write(new TextEncoder().encode(response));
     this.closeClient();
   }
@@ -62,7 +66,10 @@ export default class NetworkController {
     await this.stream.read(buffer);
 
     if (buffer[0] == 250 && buffer[1] == 0) {
-      console.log("I know, this ping service.", new TextDecoder().decode(buffer))
+      console.log(
+        "I know, this ping service.",
+        new TextDecoder().decode(buffer),
+      );
     } else {
       console.log(buffer, new TextDecoder().decode(buffer));
     }
