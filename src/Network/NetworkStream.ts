@@ -41,6 +41,7 @@ export default class NetworkStream {
     Online.addPlayer(new Player("usesrs"))
     console.log("This from Minecraft Client");
     const handshaking = await Handshaking(this.stream)
+    console.log(handshaking)
 
     this.closeClient();
   }

@@ -1,0 +1,10 @@
+{
+    "tasks": {
+      "start": "deno run -A main.ts",
+      "start:dev": "cls; deno run -A --watch main.ts",
+      "bundle": "",
+      "build": "deno compile -A main.ts"
+    },
+    "importMap": "./import_map.json"
+  }
+  
