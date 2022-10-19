@@ -2,7 +2,7 @@
   "tasks": {
     "start": "deno run -A main.ts",
     "start:dev": "cls; deno run -A --watch main.ts",
-    "bundle": "",
+    "bundle": "deno bundle main.ts iwm-bundle.js",
     "build": "deno compile -A main.ts"
   },
   "importMap": "./import_map.json"
