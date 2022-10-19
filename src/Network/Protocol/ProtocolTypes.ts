@@ -40,4 +40,37 @@ export default class ProtocolTypes {
     const length = await this.readVarInt();
     return new TextDecoder().decode(await this.readBytes(length));
   }
+
+  public writeVarInt(value: number): number[] {
+    const buffer: number[] = [];
+    while (true) {
+      if ((value & ~SEGMENT_BITS) == 0) {
+        buffer.push(value);
+        break;
+      }
+      buffer.push((value & SEGMENT_BITS) | CONTINUE_BIT);
+
+      // Note: >>> means that the sign bit is shifted with the rest of the number rather than being left alone
+      value >>>= 7;
+    }
+    return buffer;
+  }
+
+  public async writeBytes(array: number[] | Uint8Array) {
+    const arrayLengthToBytes = this.writeVarInt(array.length);
+    const buffer = new Uint8Array(arrayLengthToBytes.length + array.length);
+    buffer.set([...arrayLengthToBytes, ...array]);
+    return await this.stream.write(buffer);
+  }
+
+  public writeString(text: string): number[] {
+    const decodeText = new TextEncoder().encode(text);
+    const textLengthToBytes = this.writeVarInt(decodeText.length);
+    return [...textLengthToBytes, ...decodeText];
+  }
+
+  public async readSkip(): Promise<number | null> {
+    const length = await this.readVarInt();
+    return await this.stream.read(new Uint8Array(length));
+  }
 }

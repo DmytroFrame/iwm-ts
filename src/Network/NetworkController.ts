@@ -1,6 +1,8 @@
 import Player from "../Game/Player.ts";
 import Online from "../Game/Online.ts";
-import { Handshaking } from "./Protocol/Server/Handshaking.ts";
+import { Handshaking, nextState } from "./Protocol/Server/Handshaking.ts";
+import { StatusResponse } from "./Protocol/Client/StatusResponse.ts";
+import { Skiplisten } from "./Protocol/Client/Skiplisten.ts";
 
 export default class NetworkController {
   private stream: Deno.Conn;
@@ -41,6 +43,12 @@ export default class NetworkController {
     Online.addPlayer(new Player("usesrs"));
     console.log("This from Minecraft Client");
     const handshaking = await Handshaking(this.stream);
+    if (handshaking.nextState === nextState.Status) {
+      await Skiplisten(this.stream);
+      // await StatusResponse(this.stream)
+      console.log("iswork");
+    }
+
     console.log(handshaking);
 
     this.closeClient();
