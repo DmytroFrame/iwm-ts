@@ -2,7 +2,7 @@ import Player from "../Game/Player.ts";
 import Online from "../Game/Online.ts";
 import { Handshaking } from "./Protocol/Server/Handshaking.ts";
 
-export default class NetworkStream {
+export default class NetworkController {
   private stream: Deno.Conn;
   private fistByte = -1;
   private lastByte = -1;
