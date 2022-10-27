@@ -3,9 +3,10 @@
 import Player from "../Game/Player.ts";
 
 export default class Online {
+  private static maxOnline: number
   private static players: Player[] = [];
 
-  static getOnline(): number {
+  static get getOnline(): number {
     return this.players.length;
   }
 
@@ -27,6 +28,14 @@ export default class Online {
 
   static addPlayer(player: Player) {
     return this.players.push(player);
+  }
+
+  static setMaxOnline(online: number) {
+    this.maxOnline = online
+  }
+
+  static get getMaxOnline(): number {
+    return this.maxOnline
   }
 
   // static

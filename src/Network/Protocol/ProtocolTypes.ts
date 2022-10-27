@@ -60,6 +60,7 @@ export default class ProtocolTypes {
     const arrayLengthToBytes = this.writeVarInt(array.length);
     const buffer = new Uint8Array(arrayLengthToBytes.length + array.length);
     buffer.set([...arrayLengthToBytes, ...array]);
+    console.log("WRITE:", buffer)
     return await this.stream.write(buffer);
   }
 
@@ -69,8 +70,10 @@ export default class ProtocolTypes {
     return [...textLengthToBytes, ...decodeText];
   }
 
-  public async readSkip(): Promise<number | null> {
+  public async readSkip(): Promise<void> {
     const length = await this.readVarInt();
-    return await this.stream.read(new Uint8Array(length));
+    const buffer = new Uint8Array(length)
+    await this.stream.read(buffer)
+    console.log("SKIP:", buffer)
   }
 }

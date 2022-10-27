@@ -1,3 +1,6 @@
 import { IWMServer } from "./src/Server.ts";
 
-new IWMServer().listen(4000);
+const server = new IWMServer({
+    maxOnline: 3,
+})
+await server.listen(4000)

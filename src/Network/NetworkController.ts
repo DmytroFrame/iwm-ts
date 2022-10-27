@@ -3,6 +3,7 @@ import Online from "../Game/Online.ts";
 import { Handshaking, nextState } from "./Protocol/Server/Handshaking.ts";
 import { StatusResponse } from "./Protocol/Client/StatusResponse.ts";
 import { Skiplisten } from "./Protocol/Client/Skiplisten.ts";
+import { Disconnect } from "./Protocol/Client/Disconnect.ts";
 
 export default class NetworkController {
   private stream: Deno.Conn;
@@ -20,51 +21,63 @@ export default class NetworkController {
 
     switch (this.lastByte) {
       case 0:
-        return await this.routeHandshaking();
+        console.clear()
+        await this.routeHandshaking();
+        break;
 
       case 69:
-        return this.routeWebPing();
+        await this.routeWebPing();
+        break;
 
       default:
-        return await this.routeDefault();
+        await this.routeDefault();
+        break;
     }
-  }
-
-  private async readFirstBytes() {
-    const buffer = new Uint8Array(2);
-    if ((await this.stream.read(buffer)) == 0) {
-      return this.closeClient();
-    }
-    this.fistByte = buffer[0];
-    this.lastByte = buffer[1];
+    this.closeClient();
   }
 
   private async routeHandshaking() {
-    Online.addPlayer(new Player("usesrs"));
     console.log("This from Minecraft Client");
     const handshaking = await Handshaking(this.stream);
+    console.log(handshaking);
     if (handshaking.nextState === nextState.Status) {
       await Skiplisten(this.stream);
-      // await StatusResponse(this.stream)
-      console.log("iswork");
+      await StatusResponse(this.stream);
+      await Skiplisten(this.stream);
+      const buffer = new Uint8Array(10);
+      buffer.set([9, 1, 0, 0, 0, 0, 0, 212, 237, 81]);
+      this.stream.write(buffer);
+      return
+      
     }
-
-    console.log(handshaking);
-
-    this.closeClient();
+    if (Online.getOnline >= Online.getMaxOnline) {
+      await Disconnect(this.stream, `Sory but server is full!`);
+      return;
+    }
+     
+    Online.addPlayer(new Player("usesrs"));
+    await Skiplisten(this.stream);
+    await Skiplisten(this.stream);
+    await Skiplisten(this.stream);
+    await Skiplisten(this.stream);
+    await Skiplisten(this.stream);
+    await Skiplisten(this.stream);
+    await Skiplisten(this.stream);
+    await Skiplisten(this.stream);
+      
+    
   }
 
   private async routeWebPing() {
     console.log("This ping from Web Browser");
     await this.stream.read(new Uint8Array(1000));
     const content = JSON.stringify({
-      online: Online.getOnline(),
+      max: Online.getMaxOnline,
+      online: Online.getOnline,
       players: Online.getPlayersList(30),
     });
-    const response =
-      `HTTP/1.1 200 OK\r\nContent-Length: ${content.length}\r\nContent-Type: application/json; charset=utf-8\r\nAccess-Control-Allow-Origin: *\r\nX-Powered-By: iWM Server\r\n\r\n${content}`;
+    const response = `HTTP/1.1 200 OK\r\nContent-Length: ${content.length}\r\nContent-Type: application/json; charset=utf-8\r\nAccess-Control-Allow-Origin: *\r\nX-Powered-By: iWM Server\r\n\r\n${content}`;
     await this.stream.write(new TextEncoder().encode(response));
-    this.closeClient();
   }
 
   private async routeDefault() {
@@ -76,12 +89,20 @@ export default class NetworkController {
     if (buffer[0] == 250 && buffer[1] == 0) {
       console.log(
         "I know, this ping service.",
-        new TextDecoder().decode(buffer),
+        new TextDecoder().decode(buffer)
       );
     } else {
       console.log(buffer, new TextDecoder().decode(buffer));
     }
-    this.closeClient();
+  }
+
+  private async readFirstBytes() {
+    const buffer = new Uint8Array(2);
+    if ((await this.stream.read(buffer)) == 0) {
+      return this.closeClient();
+    }
+    this.fistByte = buffer[0];
+    this.lastByte = buffer[1];
   }
 
   private closeClient() {

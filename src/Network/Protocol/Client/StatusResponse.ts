@@ -1,30 +1,31 @@
 import Online from "../../../Game/Online.ts";
+import { IWMServer } from "../../../Server.ts";
 import ProtocolTypes from "../ProtocolTypes.ts";
 
 export async function StatusResponse(stream: Deno.Conn) {
+  const protocol = new ProtocolTypes(stream);
   const response = {
     version: {
       name: "1.19.20",
       protocol: 760,
     },
     players: {
-      max: 100,
-      online: Online.getOnline(),
-      sample: Online.getPlayersList(10).map((player) => ({
+      max: Online.getMaxOnline,
+      online: Online.getOnline,
+      sample: Online.getPlayersList(20).map((player) => ({
         name: player.username,
         id: player.uuid,
       })),
     },
     description: {
-      text: "Hello world",
+      text: IWMServer.description,
     },
-    favicon: "data:image/png;base64,<data>",
-    previewsChat: true,
-    enforcesSecureChat: true,
+    favicon: IWMServer.description,
+    previewsChat: IWMServer.previewsChat,
+    enforcesSecureChat: IWMServer.enforcesSecureChat,
   };
-  const protocol = new ProtocolTypes(stream);
-  const arrayBytes: number[] = [];
-  arrayBytes.push(0x00);
-  arrayBytes.concat(protocol.writeString(JSON.stringify(response)));
-  await protocol.writeBytes(arrayBytes);
+  return await protocol.writeBytes([
+    0x00,
+    ...protocol.writeString(JSON.stringify(response)),
+  ]);
 }
