@@ -4,6 +4,8 @@ import { Handshaking, nextState } from "./Protocol/Server/Handshaking.ts";
 import { StatusResponse } from "./Protocol/Client/StatusResponse.ts";
 import { Skiplisten } from "./Protocol/Client/Skiplisten.ts";
 import { Disconnect } from "./Protocol/Client/Disconnect.ts";
+import { PingResponse } from "./Protocol/Client/PingResponse.ts";
+import { LoginStart } from "./Protocol/Server/LoginStart.ts";
 
 export default class NetworkController {
   private stream: Deno.Conn;
@@ -44,11 +46,8 @@ export default class NetworkController {
       await Skiplisten(this.stream);
       await StatusResponse(this.stream);
       await Skiplisten(this.stream);
-      const buffer = new Uint8Array(10);
-      buffer.set([9, 1, 0, 0, 0, 0, 0, 212, 237, 81]);
-      this.stream.write(buffer);
+      await PingResponse(this.stream)
       return
-      
     }
     if (Online.getOnline >= Online.getMaxOnline) {
       await Disconnect(this.stream, `Sory but server is full!`);
@@ -56,6 +55,7 @@ export default class NetworkController {
     }
      
     Online.addPlayer(new Player("usesrs"));
+    // console.log(await LoginStart(this.stream))
     await Skiplisten(this.stream);
     await Skiplisten(this.stream);
     await Skiplisten(this.stream);
